@@ -122,7 +122,7 @@ func (db *Storage) Register(val interface{}) {
 	}
 	t = t.Elem()
 	dt := &dtype{
-		name:        t.PkgPath() + "." + t.Name(),
+		name:        t.Name(),
 		fieldByName: make(map[string]*field),
 	}
 	first := true
