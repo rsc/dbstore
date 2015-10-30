@@ -6,6 +6,9 @@
 //
 // Each struct type is stored in its own table, and each field is a separate column of that table.
 // This package makes it easy to store structs into such a database and to read them back out.
+//
+// UNFINISHED! USE AT YOUR OWN RISK!
+//
 package dbstore // import "rsc.io/dbstore"
 
 import (
@@ -183,6 +186,8 @@ func (db *Storage) Register(val interface{}) {
 		}
 
 		switch f.Type.Kind() {
+		default:
+			panic(fmt.Sprintf("dbstore.Register %s: invalid field %s %s", dt.name, f.Name, f.Type))
 		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int,
 			reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint, reflect.Uintptr:
 			df.dbtype = "integer"
@@ -198,10 +203,12 @@ func (db *Storage) Register(val interface{}) {
 			// ok
 		case reflect.Struct:
 			if f.Type != reflect.TypeOf(time.Time{}) {
+				panic(fmt.Sprintf("dbstore.Register %s: invalid field %s %s", dt.name, f.Name, f.Type))
 			}
 			df.dbtype = "timestamp"
 		case reflect.Slice:
 			if f.Type.Elem() != reflect.TypeOf(byte(0)) {
+				panic(fmt.Sprintf("dbstore.Register %s: invalid field %s %s", dt.name, f.Name, f.Type))
 			}
 			df.dbtype = "blob"
 		}
@@ -455,11 +462,13 @@ func (db *Storage) Read(ctxt Context, val interface{}, columns ...string) error 
 			})
 		}
 	}
+	isCount := false
 	if sep == "" {
 		// nothing to select, but want to provide error if not there.
 		// select count of rows.
 		fmt.Fprintf(&buf, "count(*)")
 		scanargs = append(scanargs, new(int))
+		isCount = true
 	}
 
 	delete(want, "ALL")
@@ -498,6 +507,10 @@ func (db *Storage) Read(ctxt Context, val interface{}, columns ...string) error 
 
 	if err := rows.Scan(scanargs...); err != nil {
 		return err
+	}
+
+	if isCount && *scanargs[0].(*int) == 0 {
+		return ErrNotFound
 	}
 
 	for _, fix := range fixes {
