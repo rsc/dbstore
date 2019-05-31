@@ -100,7 +100,7 @@ func TestRowidInsert(t *testing.T) {
 	}
 
 	if len(all) != 2 || all[0].X != 123 || all[1].X != 234 {
-		t.Fatal("wrong results: %v", all)
+		t.Fatalf("wrong results: %v", all)
 	}
 }
 

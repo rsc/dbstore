@@ -121,7 +121,7 @@ func (db *Storage) findType(val interface{}, op string) (*dtype, int, error) {
 func (db *Storage) Register(val interface{}) {
 	t := reflect.TypeOf(val)
 	if t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Struct || t.Elem().Name() == "" {
-		panic(fmt.Sprintf("dbstore.Register: type %T Is not pointer to named struct"))
+		panic(fmt.Sprintf("dbstore.Register: type %T Is not pointer to named struct", t))
 	}
 	t = t.Elem()
 	dt := &dtype{
